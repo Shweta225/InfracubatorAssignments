@@ -1,0 +1,42 @@
+Assignement :-
+
+create a volume, call it my_volume.
+create container and attach my_volume
+change something in the volume folder, e., add a file with some content.
+create a second container mounted with the same volume, check if file exists?
+
+Solution :-
+
+create volume
+--> docker volume create my_volume
+
+create container and attach my_volume
+--> docker run -p 8081:8080 -v my_volume:/app golang_multistage
+
+-->docker volume inspect my_volume
+output:
+[
+    {
+        "CreatedAt": "2023-04-17T11:34:48Z",
+        "Driver": "local",
+        "Labels": null,
+        "Mountpoint": "/var/lib/docker/volumes/my_volume/_data",
+        "Name": "my_volume",
+        "Options": null,
+        "Scope": "local"
+    }
+]
+
+change something in the volume folder, e., add a file with some content.
+--> docker exec -it 643f156691b7 sh
+    -->touch sample.txt
+    -->vi sample.txt --> enter something 
+
+create a second container mounted with the same volume, check if file exists?
+--> docker run -p 8082:8080 -v my_volume:/app golang_multistage
+
+verify the file exists --> yes it exists
+--> docker exec -it ff72117fde35 sh
+    -->touch sample.txt
+    -->vi sample.txt --> enter something --
+
