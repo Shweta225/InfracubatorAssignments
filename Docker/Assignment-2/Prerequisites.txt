@@ -1,0 +1,48 @@
+Prerequisites for Docker Ninja training
+ 
+For the workshop, we will be using Rancher-desktop or docker with colima. If you have docker desktop for mac and already have a license, skip step 1 & 2 . 
+
+
+
+Uninstall Docker For Mac (Skip if not installed)
+Click On Docker Icon
+Select Preferences
+Select Bug Icon for the Troubleshoot menu (Bomb Icon in older Docker UI)
+Select Uninstall
+brew uninstall docker
+brew unlink docker-completion
+
+
+Install docker, docker-compose and Rancher-desktop
+brew install docker
+brew install docker-compose
+Install Rancher-desktop from here, https://rancherdesktop.io/ 
+
+OR
+
+Install docker, docker-compose and colima
+brew install colima
+brew install docker
+brew install docker-compose
+Run ```colima start --cpu 4 --memory 8 --disk 40```
+
+Download images inside Docker runtime running as Docker Desktop
+docker images  (empty list)
+docker pull ubuntu
+docker pull nginx 
+docker pull golang:alpine 
+docker pull golang
+docker pull redis
+docker pull redis:alpine
+docker images ( should see above 6 images in list)
+	
+Download/clone sample project repo and run test
+brew update &&  brew install golang
+git clone https://github.com/docker-ninja/go-app.git (clone repo from github)
+build  appmb
+cd go-app 
+make build (generate binary file of go-app)
+go run main.go (run generated binary file)
+Execute in a new terminal -> curl http://localhost:8080/ (checking if all is   running fine, you should be able to see hello message in response)
+
+Create an account on Docker Store here: https://hub.docker.com (You will need this for pushing images to docker hub registry)
