@@ -11,5 +11,27 @@ Note:
 
 Solution :-
 
-Create a dockerfile 
+Create a dockerfile in application folder
+
+```FROM golang:alpine
+WORKDIR /golangApp
+COPY . /golangApp
+RUN go build -o main .
+EXPOSE 8081
+CMD ["go", "run", "main.go"]```
+
+Build the dockerfile [added tag as myimage_golang]
+docker build -t myimage_golang .
+[Verify your image in available in images list -- docker images]
+
+Run the container with created image
+docker run -p 8081:8080 myimage_golang
+[verify that you are able to see "Hello" message in 8081 port. [curl http://localhost:8081/]]
+
+Tag an image
+docker  login
+docker tag myimage_golang shweta225/shwe2023:new
+
+Push the image to dockerhub
+docker push shweta225/shwe2023:new
 
