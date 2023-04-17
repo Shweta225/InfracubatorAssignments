@@ -1,0 +1,25 @@
+Assignment :- 
+Start an nginx container
+Port forward to local and check
+Check logs
+Go inside the container
+Stop the container
+
+Solutions : -
+
+Start an nginx container
+docker pull nginx
+
+Port forward to local and check
+docker run --name nginxContainer -d -p 8080:80 nginx
+-- You should see nginx page on local 8080 [b7dc591]
+
+Go inside the container
+docker exec -it b7dc59108721 bash
+To come out of the container ---> press ctrl+c OR ctrl+d OR type exit
+
+Stop the container
+docker stop b7dc59108721
+
+remove thr container 
+docker rm b7dc59108721
