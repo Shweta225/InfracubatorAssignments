@@ -37,6 +37,5 @@ create a second container mounted with the same volume, check if file exists?
 
 verify the file exists --> yes it exists
 --> docker exec -it ff72117fde35 sh
-    -->touch sample.txt
-    -->vi sample.txt --> enter something --
+    -->vi sample.txt 
 
