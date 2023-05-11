@@ -5,5 +5,37 @@ use / endpoint to check the service running
 use /vote endpoint to add vote
 docker-compose down
 
+
 Solution :-
-Yet to complete
+
+Step 1 : Added docker-compose.yml file 
+
+```
+version: '3'
+services:
+  app:
+    build:
+      dockerfile: Dockerfile
+    ports:
+      - 8080:8080
+```
+
+Step 2 : Turn the docker compose up
+
+Command - docker compose up
+Output - [+] Running 2/0
+ ⠿ Network go-app_default  Created                                                                                                                                       0.0s
+ ⠿ Container go-app-app-1  Created                                                                                                                                       0.0s
+Attaching to go-app-app-1
+go-app-app-1  | 2023/05/11 04:18:17 listen on :8080
+
+
+Step 3 : check on the localhost
+Command : curl localhost:8080
+Output : hello
+
+turn down the docker compose
+Command : docker compose down
+Output : [+] Running 2/2
+ ⠿ Container go-app-app-1  Removed                                                                                                                                       0.0s
+ ⠿ Network go-app_default  Removed    
