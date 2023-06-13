@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: mongodb-pod
+  labels:
+    app: mongodb-pod
+spec:
+  containers:
+  - name: mongodb-pod-container
+    image: mongo
+    ports:
+        - containerPort: 27017

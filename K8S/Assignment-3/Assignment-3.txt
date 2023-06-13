@@ -1,0 +1,52 @@
+Assignment-3 :-
+-> Create  a NodePort Service for the metadataService and access following via NodePort from the host machine
+
+-> POST to create an meta entry in the database
+curl --header "Content-Type: application/json" --request POST --data '{"group":"ABC","name":"city","value":"Pune"}' http://192.168.64.7:30006/metadata
+
+-> GET all the meta entry posted in step 1
+curl http://node-ip:nodeport/metadata/
+
+Note : In case of minikube, node-ip is minikube ip, In case of colima nodeip is localhost itself
+
+Solution : -
+~kubectl apply -f InfracubatorAssignments/K8S/Assignment-3/nodePortService.yaml
+service/metadata-service-nodeport created
+
+➜  InfracubatorAssignments kubectl get service
+NAME                        TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE
+kubernetes                  ClusterIP   10.96.0.1       <none>        443/TCP          16d
+metadata-service-nodeport   NodePort    10.97.209.150   <none>        4444:30006/TCP   13s
+
+➜  InfracubatorAssignments kubectl describe service metadata-service-nodeport
+Name:                     metadata-service-nodeport
+Namespace:                default
+Labels:                   <none>
+Annotations:              <none>
+Selector:                 app=metadata-service-app
+Type:                     NodePort
+IP Family Policy:         SingleStack
+IP Families:              IPv4
+IP:                       10.102.143.191
+IPs:                      10.102.143.191
+Port:                     <unset>  8080/TCP
+TargetPort:               8081/TCP
+NodePort:                 <unset>  30006/TCP
+Endpoints:                10.244.0.3:8081,10.244.1.4:8081
+Session Affinity:         None
+External Traffic Policy:  Cluster
+
+➜  ~ minikube service metadata-service-nodeport --url
+http://192.168.64.7:30006
+~ curl http://192.168.64.7:30006/metadata
+curl: (7) Failed to connect to 192.168.64.7 port 30006: Connection refused
+Was not able to access the port from outside[connection refused]. Ran colima and repeate the above steps.
+
+➜ ~minikube service metadata-service-nodeport --url
+http://192.168.64.7:30006
+➜  ~ curl http://192.168.64.7:30006/metadata
+[]%
+➜  ~ curl http://192.168.64.7:30006/actuator/health
+{"status":"UP"}%
+➜  ~ curl --header "Content-Type: application/json" --request POST --data '{"group":"ABC","name":"city","value":"Pune"}' http://192.168.64.7:30006/metadata
+{"id":"647da03a8247d30001c1fc80","message":"Successfully saved metadata."}%

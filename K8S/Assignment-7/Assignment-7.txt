@@ -1,0 +1,75 @@
+Assignment:-
+
+Run the mongo database with the persistent volume using PV and PVC
+USe hostPath to define PV
+Delete and Recreate MongoDB pod and see no data loss
+
+Solution :-
+➜  Assignment-5 git:(main) ✗ kubectl apply -f metaservice.yaml
+service/metadataservice-nodeport created
+➜  Assignment-5 git:(main) ✗ kubectl apply -f mongoservice.yaml
+service/mongo created
+➜  Assignment-5 git:(main) ✗ kubectl apply -f mongodbdeployment.yaml
+deployment.apps/mongodb-deployment created
+➜  Assignment-5 git:(main) ✗ kubectl apply -f metadatadeployment.yaml
+deployment.apps/metadataservice-deployment created
+➜  Assignment-7 git:(main) ✗ kubectl apply -f pv.yaml
+persistentvolume/mongo-db-pv created
+➜  Assignment-7 git:(main) ✗ kubectl apply -f pvc.yaml
+persistentvolumeclaim/mongo-db-pvc created
+
+
+➜  ~ kubectl get all
+NAME                                      READY   STATUS    RESTARTS   AGE
+pod/metadataservice-rc-5f8f8676b5-bkb2f   1/1     Running   0          18m
+pod/mongodb-deployment-d94484965-89p2s    1/1     Running   0          84s
+pod/mongodb-deployment-d94484965-prx59    1/1     Running   0          84s
+
+NAME                               TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE
+service/kubernetes                 ClusterIP   10.96.0.1       <none>        443/TCP          24d
+service/metadataservice-nodeport   NodePort    10.102.18.125   <none>        8080:30000/TCP   18h
+service/mongo                      ClusterIP   10.108.72.4     <none>        27017/TCP        8m24s
+
+NAME                                 READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/metadataservice-rc   1/1     1            1           18h
+deployment.apps/mongodb-deployment   2/2     2            2           84s
+
+NAME                                            DESIRED   CURRENT   READY   AGE
+replicaset.apps/metadataservice-rc-5f8f8676b5   1         1         1       18h
+replicaset.apps/mongodb-deployment-d94484965    2         2         2       84s
+
+
+Add data 
+curl --location 'http://192.168.64.7:30000/metadata' \
+--header 'Content-Type: application/json' \
+--data '{
+    "group": "shwetapv",
+    "name": "city",
+    "value": "Pune"
+}'
+
+{"id":"6487cfaf2de10b0001e7fe08","message":"Successfully saved metadata."}%
+➜  ~ curl --location 'http://192.168.64.7:30000/metadata'
+[{"group":"shewtapv","lastUpdatedTs":"2023-06-13T02:09:10.832","name":"city","id":"6487cf3d2de10b0001e7fe07"}]%
+
+delete the mongo deployment
+kubectl delete deployment mongodb-deployment
+deployment.apps "mongodb-deployment" deleted
+
+reapply the mongo deployment
+kubectl apply -f mongodbdeployment.yaml
+deployment.apps/mongodb-deployment created
+
+add data again 
+curl --location 'http://192.168.64.7:30000/metadata' \
+--header 'Content-Type: application/json' \
+--data '{
+    "group": "shwetapv1",
+    "name": "city",
+    "value": "Pune"
+}'
+{"id":"6487cfdc2de10b0001e7fe09","message":"Successfully saved metadata."}%
+
+➜  ~ curl --location 'http://192.168.64.7:30000/metadata'
+[{"group":"shewtapv1","lastUpdatedTs":"2023-06-13T02:10:08.09","name":"city","id":"6487cfdc2de10b0001e7fe09"},
+{"group":"shewtapv","lastUpdatedTs":"2023-06-13T02:10:08.09","name":"city","id":"6487cf3d2de10b0001e7fe07"}]%

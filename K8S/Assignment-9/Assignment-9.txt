@@ -1,0 +1,38 @@
+
+Assignment:-
+Use a secret mongo url in metadata service
+create a k8s secret object with mongo configuration url and pass it as env to metadata service under key MONGODB_URI
+
+
+Solution:-
+
+To get the secret 
+➜  ~ echo -n mongodb://mongo/metadata | base64
+bW9uZ29kYjovL21vbmdvL21ldGFkYXRh
+
+➜  Assignment-5 git:(main) ✗ kubectl apply -f metaservice.yaml
+service/metadataservice-nodeport created
+➜  Assignment-5 git:(main) ✗ kubectl apply -f mongoservice.yaml
+service/mongo created
+➜  Assignment-5 git:(main) ✗ kubectl apply -f mongodbdeployment.yaml
+deployment.apps/mongodb-deployment created
+➜  Assignment-5 git:(main) ✗ kubectl apply -f metadatadeployment.yaml
+deployment.apps/metadataservice-deployment created
+➜  Assignment-7 git:(main) ✗ kubectl apply -f pv.yaml
+persistentvolume/mongo-db-pv created
+➜  Assignment-7 git:(main) ✗ kubectl apply -f pvc.yaml
+persistentvolumeclaim/mongo-db-pvc created
+➜  Assignment-9 git:(main) ✗ kubectl apply -f secret.yaml
+secret/mongo-secret created
+
+➜  ~ curl --location 'http://192.168.64.7:30000/metadata' \
+--header 'Content-Type: application/json' \
+--data '{
+    "group": "shewtasecret",
+    "name": "city",
+    "value": "Pune"
+}'
+{"id":"6487d7f03d5ca2000135182b","message":"Successfully saved metadata."}%
+➜  ~ curl --location 'http://192.168.64.7:30000/metadata'
+[{"group":"shewtasecret","lastUpdatedTs":"2023-06-13T02:44:11.298","name":"city","id":"6487d7f03d5ca2000135182b"},{"group":"shewtaconfig","lastUpdatedTs":"2023-06-13T02:44:11.299","name":"city","id":"6487d5e53d5ca2000135182a"},{"group":"shewtapv1","lastUpdatedTs":"2023-06-13T02:44:11.299","name":"city","id":"6487cfaf2de10b0001e7fe08"},{"group":"shewtapv","lastUpdatedTs":"2023-06-13T02:44:11.299","name":"city","id":"6487ced72de10b0001e7fe06"}]%
+➜  ~

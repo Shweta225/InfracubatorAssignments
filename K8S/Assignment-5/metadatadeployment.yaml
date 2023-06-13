@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: metadataservice-deployment
+  labels:
+    app: metadataservice
+    type: back-end
+spec:
+  selector:
+    matchLabels:
+      type: back-end
+  template:
+    metadata:
+      name: metadataservice
+      labels:
+        type: back-end
+    spec:
+      containers:
+        - image: sunitparekh/metadata:v2.0
+          name: metadataservice
+          ports:
+            - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          env:
+            - name: MONGODB_URI
+              value: mongodb://mongo/metadata

@@ -1,0 +1,46 @@
+Assignment :-
+-> Deploy new pod using mangodb image (https://hub.docker.com/_mango)
+-> Create ClusterIP service for mangodb with service name as mango, so that database is available via mongo DNS name (mongo databse runs by default on 27017 port)
+-> Change image in MetadataService to sunitparekh/metadata:v2.0(connect to databse at mongo hostname by passing MONGODB_URI=mongodb://mongo/metadata environment variable inside container spec)
+-> Try again POST and GET for metadata service, everything work as expected.
+
+Start Mongo first and then meta service.
+
+
+Solution :-
+
+
+➜ kubectl apply -f mongodbPod.yaml pod/mongodb-pod created
+pod/mongodb-pod created
+➜ kubectl apply -f clusterIP.yaml
+service/mongo created
+➜ kubectl apply -f metadataservice.yaml
+replicaset.apps/metadata-service-replicaset created
+
+
+➜  ~ kubectl get nodes -o wide
+NAME           STATUS   ROLES           AGE     VERSION   INTERNAL-IP    EXTERNAL-IP   OS-IMAGE               KERNEL-VERSION   CONTAINER-RUNTIME
+minikube       Ready    control-plane   23d     v1.26.3   192.168.64.7   <none>        Buildroot 2021.02.12   5.10.57          docker://20.10.23
+minikube-m02   Ready    <none>          6d23h   v1.26.3   192.168.64.8   <none>        Buildroot 2021.02.12   5.10.57          docker://20.10.23
+
+➜  ~ kubectl get pods -o wide
+NAME                                READY   STATUS    RESTARTS      AGE     IP           NODE           NOMINATED NODE   READINESS GATES
+metadata-service-replicaset-8phkl   1/1     Running   5 (72s ago)   3m33s   10.244.0.6   minikube       <none>           <none>
+metadata-service-replicaset-pkszh   1/1     Running   5 (87s ago)   3m33s   10.244.1.8   minikube-m02   <none>           <none>
+mongodb-pod                         1/1     Running   0             18m     10.244.1.7   minikube-m02   <none>           <none>
+
+➜  ~ kubectl get service -o wide
+NAME         TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)     AGE   SELECTOR
+kubernetes   ClusterIP   10.96.0.1       <none>        443/TCP     23d   <none>
+mongo        ClusterIP   10.103.77.127   <none>        27017/TCP   13m   app=mongodb-pod
+
+➜  ~ kubectl port-forward metadata-service-replicaset-8phkl 8888:8080
+Forwarding from 127.0.0.1:8888 -> 8080
+Forwarding from [::1]:8888 -> 8080
+Handling connection for 8888
+
+➜  ~ curl --header "Content-Type: application/json" --request POST --data '{"group":"shweta1", "name":"city","value": "Pune"}' "http://localhost:8888/metadata"
+{"id":"64868b43bf5327000169de76","message":"Successfully saved metadata."}%
+
+➜  ~ curl http://localhost:8888/metadata
+[{"group":"shweta1","lastUpdatedTs":"2023-06-12T03:04:38.876","name":"city","id":"64868b43bf5327000169de76"},{"group":"shweta","lastUpdatedTs":"2023-06-12T03:04:38.877","name":"city","id":"64868a34bf5327000169de75"}]%

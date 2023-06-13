@@ -1,0 +1,72 @@
+Assignment :-
+
+Run the mongo db with the persistent volume using hostpath
+setup mongodb with custom data folder path https://hub.docker.com/_/mongo
+mount path should be /data/db
+Delete and Recreate MongoDB pod and see no data loss
+
+Solution:-
+
+➜  Assignment-5 git:(main) ✗ kubectl apply -f metaservice.yaml
+service/metadataservice-nodeport created
+➜  Assignment-5 git:(main) ✗ kubectl apply -f mongoservice.yaml
+service/mongo created
+➜  Assignment-5 git:(main) ✗ kubectl apply -f mongodbdeployment.yaml
+deployment.apps/mongodb-deployment created
+➜  Assignment-5 git:(main) ✗ kubectl apply -f metadatadeployment.yaml
+deployment.apps/metadataservice-deployment created
+
+➜  ~ kubectl get all
+NAME                                      READY   STATUS    RESTARTS   AGE
+pod/metadataservice-rc-5f8f8676b5-j2ggd   1/1     Running   0          65m
+pod/mongodb-deployment-5f89c56456-ljgfw   1/1     Running   0          20s
+pod/mongodb-deployment-5f89c56456-t5pll   1/1     Running   0          20s
+
+NAME                               TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE
+service/kubernetes                 ClusterIP   10.96.0.1       <none>        443/TCP          24d
+service/metadataservice-nodeport   NodePort    10.102.18.125   <none>        8080:30000/TCP   66m
+service/mongo                      ClusterIP   10.108.36.220   <none>        27017/TCP        66m
+
+NAME                                 READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/metadataservice-rc   1/1     1            1           65m
+deployment.apps/mongodb-deployment   2/2     2            2           20s
+
+NAME                                            DESIRED   CURRENT   READY   AGE
+replicaset.apps/metadataservice-rc-5f8f8676b5   1         1         1       65m
+replicaset.apps/mongodb-deployment-5f89c56456   2         2         2       20s
+
+Add data 
+curl --location 'http://192.168.64.7:30000/metadata' \
+--header 'Content-Type: application/json' \
+--data '{
+    "group": "shwetamongo1",
+    "name": "city",
+    "value": "Pune"
+}'
+
+{"id":"6486e242ed1b0e0001b98fa4","message":"Successfully saved metadata."}%
+
+delete the mongo pod 
+kubectl delete deployment mongodb-deployment
+deployment.apps "mongodb-deployment" deleted
+
+reapply the mongo deployment
+kubectl apply -f mongodbdeployment.yaml
+deployment.apps/mongodb-deployment created
+
+add data again 
+curl --location 'http://192.168.64.7:30000/metadata' \
+--header 'Content-Type: application/json' \
+--data '{
+    "group": "shwetamongo2",
+    "name": "city",
+    "value": "Pune"
+}'
+{"id":"6486e1e7ed1b0e0001b98fa3","message":"Successfully saved metadata."}%
+
+
+get the data, we should be able to see the previous data that we added before deleting the pod
+curl --location 'http://192.168.64.7:30000/metadata'
+
+[{"group":"shwetamongo2","lastUpdatedTs":"2023-06-12T09:15:49.452","name":"city","id":"6486e1e7ed1b0e0001b98fa3"},
+{"group":"shwetamongo1","lastUpdatedTs":"2023-06-12T09:15:49.452","name":"city","id":"6486e0ebed1b0e0001b98fa2"}]%

@@ -1,0 +1,64 @@
+Assignment : -
+
+create Replicaset for the metadataService and deploy in k8s cluster.
+Add livenessProbe and readinessProbe using spring actuator's /actuator/health endpoint
+POST to create an meta entry in the database
+curl --header "Content-Type: application/json" --request POST --data '{"group":"ABC","name":"city","value":"Pune"}' http://10.244.0.3:8080/metadata
+
+Get all the meta entry posted in step 1
+curl http://pod-ip:8080/metadata/
+
+Solution :-
+
+Apply the yaml file created replicaset.yaml
+~kubectl apply -f InfracubatorAssignments/K8S/Assignment-2/replicaset.yaml
+replicaset.apps/metadata-service-replicaset created
+
+~kubectl get pods
+NAME                                READY   STATUS              RESTARTS   AGE
+metadata-service-replicaset-nctfp   0/1     ContainerCreating   0          4s
+metadata-service-replicaset-zdckr   0/1     Running             0          4s
+
+~kubectl get replicaset
+NAME                          DESIRED   CURRENT   READY   AGE
+metadata-service-replicaset   2         2         2       9m1s
+
+~kubectl describe rs metadata-service-replicaset
+Name:         metadata-service-replicaset
+Namespace:    default
+Selector:     app=metadata-service-app
+Labels:       app=metadata-service-app
+Annotations:  <none>
+Replicas:     2 current / 2 desired
+Pods Status:  2 Running / 0 Waiting / 0 Succeeded / 0 Failed
+Pod Template:
+  Labels:  app=metadata-service-app
+  Containers:
+   metadata-service-app:
+    Image:        luckyganesh/metadata-service:v1
+    Port:         4444/TCP
+    Host Port:    0/TCP
+    Liveness:     http-get http://:8080/actuator/health delay=10s timeout=1s period=5s #success=1 #failure=3
+    Readiness:    http-get http://:8080/actuator/health delay=10s timeout=1s period=5s #success=1 #failure=3
+    Environment:  <none>
+    Mounts:       <none>
+  Volumes:        <none>
+Events:
+  Type    Reason            Age   From                   Message
+  ----    ------            ----  ----                   -------
+  Normal  SuccessfulCreate  10m   replicaset-controller  Created pod: metadata-service-replicaset-zdckr
+  Normal  SuccessfulCreate  10m   replicaset-controller  Created pod: metadata-service-replicaset-nctfp
+
+
+~minikube ssh
+$ curl --header "Content-Type: application/json" --request POST --data '{"group":"ABC","name":"city","value":"Pune"}' http://10.244.0.3:8080/metadata
+{"id":"647d654e7b8d6900016b12ad","message":"Successfully saved metadata."}$
+$
+$ curl http://10.244.0.3:8080/metadata/
+[{"lastUpdatedTs":"2023-06-05T04:33:45.983","group":"ABC","name":"city","id":"647d654e7b8d6900016b12ad"}]$
+$
+$ curl http://10.244.1.4:8080/metadata/
+[]
+$
+
+Note : Pods do not share the metadata added
