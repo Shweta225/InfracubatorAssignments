@@ -1,0 +1,2 @@
+- https://training.github.com/downloads/github-git-cheat-sheet/
+- https://ndpsoftware.com/git-cheatsheet.html#loc=remote_repo;
